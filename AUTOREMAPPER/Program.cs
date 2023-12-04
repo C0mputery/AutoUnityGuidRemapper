@@ -13,12 +13,6 @@ string goodGuidsDirectory = args[2];
 bool.TryParse(args[3], out bool shouldRemoveOldFiles);
 bool.TryParse(args[4], out bool setAllFilesAsReadable);
 
-/*string unityProjectDirectory = "C:\\TotallyJankServer\\Assets";
-string badGuidDirectory = "C:\\TotallyJankServer\\Assets\\!RippedAssets";
-string goodGuidsDirectory = "C:\\TotallyJankServer\\Library\\PackageCache"; 
-bool shouldRemoveOldFiles = true;
-bool setAllFilesAsReadable = true*/
-    ;
 foreach (string s in args) { Console.WriteLine(s);}
 
 if (setAllFilesAsReadable)
@@ -60,8 +54,7 @@ Parallel.ForEach(goodMetaFilePaths, goodMetaFilePath =>
                                 namespaceMatch = Regex.Match(goodFileLine, @"namespace\s+([\w.]+)");
                                 if (namespaceMatch.Success)
                                 {
-                                    filesNameToGoodGuids.TryAdd(
-                                        Path.GetFileName(goodFilePath) + namespaceMatch.Groups[1].Value, goodGuid);
+                                    filesNameToGoodGuids.TryAdd(Path.GetFileName(goodFilePath) + namespaceMatch.Groups[1].Value, goodGuid);
                                     break;
                                 }
                             }
@@ -229,31 +222,38 @@ Parallel.ForEach(filesToRemap, fileToRemap =>
 {
     if (File.Exists(fileToRemap))
     {
-        long guidsRemapped = 0;
+        bool guidsRemapped = false;
         string tempFile = Path.GetTempFileName();
         using (StreamReader fileToRemapStreamReader = new StreamReader(fileToRemap))
         using (StreamWriter tempFileStreamWriter = new StreamWriter(tempFile)) {
             string line;
             while ((line = fileToRemapStreamReader.ReadLine()) != null)
             {
-                string oldLine = line;
                 for (int i = 0; i < badGuidsArray.Length; i++)
                 {
-                    line = line.Replace(badGuidsArray[i], goodGuidsArray[i]);
+                    if (line.Contains(badGuidsArray[i]))
+                    {
+                        line = line.Replace(badGuidsArray[i], goodGuidsArray[i]);
+                        guidsRemapped = true;
+                        break;
+                    }
                 }
-                if (line != oldLine) { guidsRemapped++;}
                 tempFileStreamWriter.WriteLine(line);
             }
         }
-        if (guidsRemapped > 0)
+        if (guidsRemapped)
         {
             File.Move(tempFile, fileToRemap, true);
             Console.WriteLine($"{Path.GetFileName(fileToRemap)} Successful Remapped with {guidsRemapped} GUIDs");
-            Interlocked.Add(ref totalGuidsRemapped, guidsRemapped);
+            Interlocked.Add(ref totalGuidsRemapped, 1);
         } else
         {
+            File.Delete(tempFile);
             Console.WriteLine($"{Path.GetFileName(fileToRemap)} Found No Bad GUIDS");
         }
+    } else
+    {
+        Console.WriteLine($"{fileToRemap} Does Not Exist??");
     }
 });
 
@@ -261,3 +261,4 @@ Console.WriteLine($"{totalGuidsRemapped} bad GUID references found and remapped"
 
 stopwatch.Stop();
 Console.WriteLine($"Elapsed Time: {stopwatch.Elapsed}");
+Console.WriteLine($"Settigns Used: unityProjectDirectory {unityProjectDirectory}, badGuidDirectory {badGuidDirectory}, goodGuidsDirectory {goodGuidsDirectory}");
