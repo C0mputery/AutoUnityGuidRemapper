@@ -217,7 +217,8 @@ filesToRemap = filesToRemap.Concat(Directory.EnumerateFiles(unityProjectDirector
 
 Console.WriteLine("Starting GUID Remapping");
 
-long totalGuidsRemapped = 0;
+long badGUIDsRefrenced = 0;
+long badReferencesFound = 0;
 Parallel.ForEach(filesToRemap, fileToRemap =>
 {
     if (File.Exists(fileToRemap))
@@ -234,6 +235,7 @@ Parallel.ForEach(filesToRemap, fileToRemap =>
                     if (line.Contains(badGuidsArray[i]))
                     {
                         line = line.Replace(badGuidsArray[i], goodGuidsArray[i]);
+                        Interlocked.Add(ref badReferencesFound, 1);
                         guidsRemapped = true;
                         break;
                     }
@@ -244,8 +246,8 @@ Parallel.ForEach(filesToRemap, fileToRemap =>
         if (guidsRemapped)
         {
             File.Move(tempFile, fileToRemap, true);
-            Console.WriteLine($"{Path.GetFileName(fileToRemap)} Successful Remapped with {guidsRemapped} GUIDs");
-            Interlocked.Add(ref totalGuidsRemapped, 1);
+            Console.WriteLine($"{Path.GetFileName(fileToRemap)} Successful Remapped GUIDs");
+            Interlocked.Add(ref badGUIDsRefrenced, 1);
         } else
         {
             File.Delete(tempFile);
@@ -257,7 +259,8 @@ Parallel.ForEach(filesToRemap, fileToRemap =>
     }
 });
 
-Console.WriteLine($"{totalGuidsRemapped} bad GUID references found and remapped");
+Console.WriteLine($"{badGUIDsRefrenced} bad GUID referenced");
+Console.WriteLine($"{badReferencesFound} bad references found");
 
 stopwatch.Stop();
 Console.WriteLine($"Elapsed Time: {stopwatch.Elapsed}");
