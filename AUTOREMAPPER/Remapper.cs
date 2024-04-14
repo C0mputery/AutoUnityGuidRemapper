@@ -36,10 +36,10 @@ namespace AUTOREMAPPER
                 {
                     goodMetaFileStreamReader.ReadLine();
                     string possibleGuidLine;
-                    if ((possibleGuidLine = goodMetaFileStreamReader.ReadLine()) != null && possibleGuidLine.StartsWith("guid: "))
+                    if ((possibleGuidLine = goodMetaFileStreamReader.ReadLine()!) != null && possibleGuidLine.StartsWith("guid: "))
                     {
-                        string goodGuid = possibleGuidLine.Substring(6);
-                        string goodFilePath = goodMetaFilePath.Substring(0, goodMetaFilePath.Length - 5);
+                        string goodGuid = possibleGuidLine[6..];
+                        string goodFilePath = goodMetaFilePath[..^5];
                         if (File.Exists(goodFilePath))
                         {
                             switch (Path.GetExtension(goodFilePath))
@@ -47,7 +47,7 @@ namespace AUTOREMAPPER
                                 case ".cs":
                                     using (StreamReader goodFileStreamReader = new StreamReader(goodFilePath))
                                     {
-                                        Match namespaceMatch = null;
+                                        Match namespaceMatch = null!;
                                         while (goodFileStreamReader.ReadLine() is { } goodFileLine)
                                         {
                                             namespaceMatch = Regex.Match(goodFileLine, @"namespace\s+([\w.]+)");
@@ -66,7 +66,7 @@ namespace AUTOREMAPPER
                                 case ".shader":
                                     using (StreamReader goodFileStreamReader = new StreamReader(goodFilePath))
                                     {
-                                        Match shaderPathMatch = null;
+                                        Match shaderPathMatch = null!;
                                         while (goodFileStreamReader.ReadLine() is { } goodFileLine)
                                         {
                                             shaderPathMatch = Regex.Match(goodFileLine, @"Shader\s+""([^""]+)""");
@@ -103,16 +103,16 @@ namespace AUTOREMAPPER
                 {
                     badMetaFileStreamReader.ReadLine();
                     string possibleGuidLine;
-                    if ((possibleGuidLine = badMetaFileStreamReader.ReadLine()) != null && possibleGuidLine.StartsWith("guid: "))
+                    if ((possibleGuidLine = badMetaFileStreamReader.ReadLine()!) != null && possibleGuidLine.StartsWith("guid: "))
                     {
-                        string badGuid = possibleGuidLine.Substring(6);
-                        string badFilePath = badMetaFilePath.Substring(0, badMetaFilePath.Length - 5);
+                        string badGuid = possibleGuidLine[6..];
+                        string badFilePath = badMetaFilePath[..^5];
                         if (File.Exists(badFilePath))
                         {
                             switch (Path.GetExtension(badFilePath))
                             {
                                 case ".cs":
-                                    Match namespaceMatch = null;
+                                    Match namespaceMatch = null!;
                                     using (StreamReader badFileStreamReader = new StreamReader(badFilePath))
                                     {
                                         while (badFileStreamReader.ReadLine() is { } line)
@@ -143,7 +143,7 @@ namespace AUTOREMAPPER
                                     }
                                     break;
                                 case ".shader":
-                                    Match shaderPathMatch = null;
+                                    Match shaderPathMatch = null!;
                                     using (StreamReader goodFileStreamReader = new StreamReader(badFilePath))
                                     {
                                         while (goodFileStreamReader.ReadLine() is { } goodFileLine)
@@ -234,7 +234,7 @@ namespace AUTOREMAPPER
                     using (StreamWriter tempFileStreamWriter = new StreamWriter(tempFile))
                     {
                         string line;
-                        while ((line = fileToRemapStreamReader.ReadLine()) != null)
+                        while ((line = fileToRemapStreamReader.ReadLine()!) != null)
                         {
                             for (int i = 0; i < badGuidsArray.Length; i++)
                             {
