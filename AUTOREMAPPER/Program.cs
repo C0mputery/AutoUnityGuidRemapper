@@ -5,7 +5,7 @@ namespace AUTOREMAPPER;
 internal class Program
 {
     // File and directory paths.
-    static string UnityAssetFolderDirectory = null!;
+    static string AssetsDirectory = null!;
     static string FFMPEGPath = null!;
     static string RootUnityProjectDirectory = null!;
     static string PackageCacheDirectory = null!;
@@ -14,6 +14,7 @@ internal class Program
     static string ExportedAudioClipDirectory = null!;
     static string ScriptsDirectory = null!;
     static string PluginsDirectory = null!;
+    static string AssemblyCSharpDirectory = null!;
 
     static void WaitForUserInputAndQuit() { Console.WriteLine("Press any key to continue..."); Console.ReadKey(); Environment.Exit(0); }
 
@@ -43,36 +44,36 @@ internal class Program
 
     static void FindFilesAndFixStucture()
     {
-        UnityAssetFolderDirectory = Directory.GetCurrentDirectory();
+        AssetsDirectory = Directory.GetCurrentDirectory();
 
-        FFMPEGPath = Path.Combine(UnityAssetFolderDirectory, "ffmpeg.exe");
+        FFMPEGPath = Path.Combine(AssetsDirectory, "ffmpeg.exe");
         if (!File.Exists(FFMPEGPath)) { Console.WriteLine("Failed to find the file: " + FFMPEGPath); WaitForUserInputAndQuit(); return; }
 
-        RootUnityProjectDirectory = Directory.GetParent(UnityAssetFolderDirectory)!.ToString();
-        if (!Directory.Exists(UnityAssetFolderDirectory)) { Console.WriteLine("Failed to find the directory: " + UnityAssetFolderDirectory); WaitForUserInputAndQuit(); return; }
+        RootUnityProjectDirectory = Directory.GetParent(AssetsDirectory)!.ToString();
+        if (!Directory.Exists(AssetsDirectory)) { Console.WriteLine("Failed to find the directory: " + AssetsDirectory); WaitForUserInputAndQuit(); return; }
 
-        PackageCacheDirectory = Path.Combine(Directory.GetParent(UnityAssetFolderDirectory)!.ToString(), "Library\\PackageCache");
+        PackageCacheDirectory = Path.Combine(Directory.GetParent(AssetsDirectory)!.ToString(), "Library\\PackageCache");
         if (!Directory.Exists(PackageCacheDirectory)) { Console.WriteLine("Failed to find the directory: " + PackageCacheDirectory); WaitForUserInputAndQuit(); return; }
 
-        ImportedFilesDirectory = Path.Combine(UnityAssetFolderDirectory, "!ImportedAssets");
+        ImportedFilesDirectory = Path.Combine(AssetsDirectory, "!ImportedAssets");
         if (!Directory.Exists(ImportedFilesDirectory)) { Console.WriteLine("Failed to find the directory: " + ImportedFilesDirectory); WaitForUserInputAndQuit(); return; }
 
-        ExportedFilesDirectory = Path.Combine(UnityAssetFolderDirectory, "!ExportedAssets");
+        ExportedFilesDirectory = Path.Combine(AssetsDirectory, "!ExportedAssets");
         if (!Directory.Exists(ExportedFilesDirectory))
         {
-            List<string> BadFileDirectorys = Directory.GetDirectories(UnityAssetFolderDirectory).ToList();
+            List<string> BadFileDirectorys = Directory.GetDirectories(AssetsDirectory).ToList();
             BadFileDirectorys.Remove(ImportedFilesDirectory);
             Directory.CreateDirectory(ExportedFilesDirectory);
             foreach (string BadFileDirectory in BadFileDirectorys)
             {
                 Directory.Move(BadFileDirectory, Path.Combine(ExportedFilesDirectory, Path.GetFileName(BadFileDirectory)));
             }
-            List<string> BadFiles = Directory.GetFiles(UnityAssetFolderDirectory).ToList();
+            List<string> BadFiles = Directory.GetFiles(AssetsDirectory).ToList();
 
             // Remove files that would cause issues if moved
-            BadFiles.Remove(Path.Combine(UnityAssetFolderDirectory, "AUTOREMAPPER.exe"));
-            BadFiles.Remove(Path.Combine(UnityAssetFolderDirectory, "ffmpeg.exe"));
-            BadFiles.Remove(Path.Combine(UnityAssetFolderDirectory, "!ImportedAssets.meta"));
+            BadFiles.Remove(Path.Combine(AssetsDirectory, "AUTOREMAPPER.exe"));
+            BadFiles.Remove(Path.Combine(AssetsDirectory, "ffmpeg.exe"));
+            BadFiles.Remove(Path.Combine(AssetsDirectory, "!ImportedAssets.meta"));
 
             foreach (string BadFile in BadFiles)
             {
@@ -85,6 +86,9 @@ internal class Program
 
         ScriptsDirectory = Path.Combine(ExportedFilesDirectory, "Scripts");
         if (!Directory.Exists(ScriptsDirectory)) { Console.WriteLine("Failed to find the directory: " + ScriptsDirectory); WaitForUserInputAndQuit(); return; }
+
+        AssemblyCSharpDirectory = Path.Combine(ScriptsDirectory, "Assembly-CSharp");
+        if (!Directory.Exists(AssemblyCSharpDirectory)) { Console.WriteLine("Failed to find the directory: " + AssemblyCSharpDirectory); WaitForUserInputAndQuit(); return; }
 
         PluginsDirectory = Path.Combine(ExportedFilesDirectory, "Plugins");
         if (!Directory.Exists(PluginsDirectory)) { Console.WriteLine("Failed to find the directory: " + PluginsDirectory); WaitForUserInputAndQuit(); return; }
@@ -100,10 +104,11 @@ internal class Program
             FindFilesAndFixStucture();
             FixGUIDs();
             FixAudio();
-            PostFix.SaveFilesFromBeingNuked(ExportedFilesDirectory);
-            PostFix.RemoveUnwantedScriptDirectorysAndFiles(ScriptsDirectory);
-            PostFix.NukePluginsDirectorys(PluginsDirectory);
-            PostFix.NukeFilesWithRegex(UnityAssetFolderDirectory);
+            PostFix.SaveFilesNeededFiles(ExportedFilesDirectory);
+            PostFix.ScriptDirectoryFix(ScriptsDirectory);
+            PostFix.AssemblyCSharpFix(AssemblyCSharpDirectory);
+            PostFix.PluginDirectoryFix(PluginsDirectory);
+            PostFix.RemoveUnwantedFiles(AssetsDirectory);
         }
         catch (Exception e)
         {

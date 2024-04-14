@@ -2,65 +2,66 @@
 {
     internal class PostFix
     {
-        static readonly List<string> FilesToSaveRegex = new List<string> { "*DisableIntercept.cs", "*MicrophoneRelay.cs" };
-        public static void SaveFilesFromBeingNuked(string AssetsFolderDirecotry)
+        static readonly List<string> FilesToSave = new List<string> { "*DisableIntercept.cs", "*MicrophoneRelay.cs" }; // Regex
+        static readonly List<string> ScriptDirectorysToKeep = new List<string> { "Assembly-CSharp", "pworld", "Zorro.Core.Runtime", "Zorro.PhotonUtility", "Zorro.Recorder", "Zorro.Settings.Runtime", "Zorro.UI.Runtime" }; // Directory Name
+        static readonly List<string> AssemblyCSharpDirectorysToKeep = new List<string> { "DefaultNamespace" }; // Directory Name
+        static readonly List<string> UnwantedFilesToRemove = new List<string> { "*__JobReflectionRegistrationOutput*", "*UnitySourceGeneratedAssemblyMonoScriptTypes_v1.cs" }; // Regex
+
+        public static void SaveFilesNeededFiles(string AssetsFolderDirecotry)
         {
-            IEnumerable<string> filesToNotNuke = FilesToSaveRegex.AsParallel().SelectMany(
-                regex => Directory.EnumerateFiles(AssetsFolderDirecotry, regex, SearchOption.AllDirectories));
-            foreach (string file in filesToNotNuke)
+            string neededFilesFolder = Path.Combine(AssetsFolderDirecotry, "NeededFiles");
+            IEnumerable<string> filesToSave = FilesToSave.AsParallel().SelectMany(regex => Directory.EnumerateFiles(AssetsFolderDirecotry, regex, SearchOption.AllDirectories));
+            foreach (string file in filesToSave) { File.Move(file, Path.Combine(neededFilesFolder, Path.GetFileName(file))); }
+        }
+
+        public static void ScriptDirectoryFix(string ScriptDirectory)
+        {
+            foreach (string DirectoryInScripts in Directory.GetDirectories(ScriptDirectory))
             {
-                File.Move(file, Path.Combine(AssetsFolderDirecotry, Path.GetFileName(file)));
+                if (!Directory.Exists(DirectoryInScripts)) { continue; }
+
+                string directoryName = Path.GetDirectoryName(DirectoryInScripts)!;
+                if (!ScriptDirectorysToKeep.Contains(directoryName))
+                {
+                    Directory.Delete(DirectoryInScripts, true);
+                    string metaFile = DirectoryInScripts + ".meta";
+                    if (File.Exists(metaFile)) { File.Delete(metaFile); }
+                }
             }
         }
 
-        static readonly List<string> scriptFolderToKeep = new List<string> { "Assembly-CSharp", "pworld", "Zorro.Core.Runtime", "Zorro.PhotonUtility", "Zorro.Recorder", "Zorro.Settings.Runtime", "Zorro.UI.Runtime" };
-        static readonly List<string> FoldersToKeepInAssmblyCSharp = new List<string> { "DefaultNamespace" };
-        public static void RemoveUnwantedScriptDirectorysAndFiles(string ScriptDirectory)
+        public static void AssemblyCSharpFix(string AssemblyCSharpDirectory)
         {
-            List<string> ScriptFiles = Directory.GetFiles(ScriptDirectory).ToList();
-            foreach (string FileInScripts in ScriptFiles)
+            foreach (string DirectoryInAssemblyCSharp in Directory.GetDirectories(AssemblyCSharpDirectory))
             {
-                if (!scriptFolderToKeep.Contains(Path.GetFileNameWithoutExtension(FileInScripts)))
-                {
-                    File.Delete(FileInScripts);
-                }
-            }
+                if (!Directory.Exists(DirectoryInAssemblyCSharp)) { continue; }
 
-            foreach (string DirectoryInAssemblyCSharp in Directory.GetDirectories(Path.Combine(ScriptDirectory, "Assembly-CSharp")))
-            {
-                if (Directory.Exists(DirectoryInAssemblyCSharp))
+                string directoryName = Path.GetDirectoryName(DirectoryInAssemblyCSharp)!;
+                if (!AssemblyCSharpDirectorysToKeep.Contains(directoryName))
                 {
-                    string name = Path.GetDirectoryName(DirectoryInAssemblyCSharp)!;
-                    if (!FoldersToKeepInAssmblyCSharp.Contains(name))
+                    Directory.Delete(DirectoryInAssemblyCSharp, true);
+                    string metaFile = DirectoryInAssemblyCSharp + ".meta";
+                    if (File.Exists(metaFile))
                     {
-                        Directory.Delete(DirectoryInAssemblyCSharp, true);
-                        string metaFile = DirectoryInAssemblyCSharp + ".meta";
-                        if (File.Exists(metaFile))
-                        {
-                            File.Delete(metaFile);
-                        }
+                        File.Delete(metaFile);
                     }
                 }
-            }
 
+            }
         }
 
-        public static void NukePluginsDirectorys(string PluginsDirectorys)
+        public static void PluginDirectoryFix(string PluginsDirectorys)
         {
             Directory.Delete(PluginsDirectorys, true);
         }
 
-        static readonly List<string> FilesToRemoveRegex = new List<string> { 
-            "*__JobReflectionRegistrationOutput*", "*UnitySourceGeneratedAssemblyMonoScriptTypes_v1.cs"
-        };
-        public static void NukeFilesWithRegex(string AssetsFolderDirecotry)
+        public static void RemoveUnwantedFiles(string AssetsFolderDirecotry)
         {
-            IEnumerable<string> filesToNuke = FilesToRemoveRegex.AsParallel().SelectMany(
+            IEnumerable<string> filesToNuke = UnwantedFilesToRemove.AsParallel().SelectMany(
                     regex => Directory.EnumerateFiles(AssetsFolderDirecotry, regex, SearchOption.AllDirectories));
 
             foreach (string file in filesToNuke)
             {
-                Console.WriteLine("Nuking file: " + file);
                 File.Delete(file);
             }
         }
