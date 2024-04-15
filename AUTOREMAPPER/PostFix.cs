@@ -2,25 +2,30 @@
 {
     internal class PostFix
     {
-        static readonly List<string> FilesToSave = new List<string> { "*DisableIntercept.cs", "*MicrophoneRelay.cs" }; // Regex
+        static readonly List<string> FilesToSave = new List<string> { "*DisableIntercept.cs", "*MicrophoneRelay.cs", "*NetworkStatistics.cs" }; // Regex
         static readonly List<string> ScriptDirectorysToKeep = new List<string> { "Assembly-CSharp", "pworld", "Zorro.Core.Runtime", "Zorro.PhotonUtility", "Zorro.Recorder", "Zorro.Settings.Runtime", "Zorro.UI.Runtime" }; // Directory Name
         static readonly List<string> AssemblyCSharpDirectorysToKeep = new List<string> { "DefaultNamespace" }; // Directory Name
-        static readonly List<string> UnwantedFilesToRemove = new List<string> { "*__JobReflectionRegistrationOutput*", "*UnitySourceGeneratedAssemblyMonoScriptTypes_v1.cs" }; // Regex
+        static readonly List<string> UnwantedFilesToRemove = new List<string> { 
+            "*__JobReflectionRegistrationOutput*", "*UnitySourceGeneratedAssemblyMonoScriptTypes_v1*", "*bleedModeParameter.cs", "*BlendModeParameter.cs",
+            "*FisheyeTypeParameter.cs", "*maskChannelModeParameter.cs", "*preLParameter.cs", "*resModeParameter.cs", "*Vector2IntParameter.cs", "*VignetteModeParameter.cs",
+            "*WarpModeParameter.cs", "*BleedMode.cs", "*FisheyeTypeEnum.cs", 
+        }; // Regex
 
-        public static void SaveFilesNeededFiles(string AssetsFolderDirecotry)
+        internal static void SaveFilesNeededFiles(string AssetsFolderDirecotry)
         {
             string neededFilesFolder = Path.Combine(AssetsFolderDirecotry, "NeededFiles");
+            Directory.CreateDirectory(neededFilesFolder);
             IEnumerable<string> filesToSave = FilesToSave.AsParallel().SelectMany(regex => Directory.EnumerateFiles(AssetsFolderDirecotry, regex, SearchOption.AllDirectories));
             foreach (string file in filesToSave) { File.Move(file, Path.Combine(neededFilesFolder, Path.GetFileName(file))); }
         }
 
-        public static void ScriptDirectoryFix(string ScriptDirectory)
+        internal static void ScriptDirectoryFix(string ScriptDirectory)
         {
             foreach (string DirectoryInScripts in Directory.GetDirectories(ScriptDirectory))
             {
                 if (!Directory.Exists(DirectoryInScripts)) { continue; }
 
-                string directoryName = Path.GetDirectoryName(DirectoryInScripts)!;
+                string directoryName = Path.GetFileName(DirectoryInScripts)!;
                 if (!ScriptDirectorysToKeep.Contains(directoryName))
                 {
                     Directory.Delete(DirectoryInScripts, true);
@@ -30,13 +35,13 @@
             }
         }
 
-        public static void AssemblyCSharpFix(string AssemblyCSharpDirectory)
+        internal static void AssemblyCSharpFix(string AssemblyCSharpDirectory)
         {
             foreach (string DirectoryInAssemblyCSharp in Directory.GetDirectories(AssemblyCSharpDirectory))
             {
                 if (!Directory.Exists(DirectoryInAssemblyCSharp)) { continue; }
 
-                string directoryName = Path.GetDirectoryName(DirectoryInAssemblyCSharp)!;
+                string directoryName = Path.GetFileName(DirectoryInAssemblyCSharp)!;
                 if (!AssemblyCSharpDirectorysToKeep.Contains(directoryName))
                 {
                     Directory.Delete(DirectoryInAssemblyCSharp, true);
@@ -50,12 +55,12 @@
             }
         }
 
-        public static void PluginDirectoryFix(string PluginsDirectorys)
+        internal static void PluginDirectoryFix(string PluginsDirectorys)
         {
             Directory.Delete(PluginsDirectorys, true);
         }
 
-        public static void RemoveUnwantedFiles(string AssetsFolderDirecotry)
+        internal static void RemoveUnwantedFiles(string AssetsFolderDirecotry)
         {
             IEnumerable<string> filesToNuke = UnwantedFilesToRemove.AsParallel().SelectMany(
                     regex => Directory.EnumerateFiles(AssetsFolderDirecotry, regex, SearchOption.AllDirectories));

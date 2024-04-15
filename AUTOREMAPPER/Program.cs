@@ -16,15 +16,16 @@ internal class Program
     static string PluginsDirectory = null!;
     static string AssemblyCSharpDirectory = null!;
 
-    static void WaitForUserInputAndQuit() { Console.WriteLine("Press any key to continue..."); Console.ReadKey(); Environment.Exit(0); }
+    internal static void WaitForUserInputAndQuit() { Console.WriteLine("Press any key to continue..."); Console.ReadKey(); Environment.Exit(0); }
+    internal static void WaitForUserInput() { Console.WriteLine("Press any key to continue..."); Console.ReadKey();}
 
-    static void FixGUIDs()
+    internal static void FixGUIDs()
     {
         Remapper.RemapGuids(RootUnityProjectDirectory, ExportedFilesDirectory, ImportedFilesDirectory, true, true);
         Remapper.RemapGuids(RootUnityProjectDirectory, ExportedFilesDirectory, PackageCacheDirectory, true, true);
     }
 
-    static void FixAudio()
+    internal static void FixAudio()
     {
         List<string> BadWavFiles = Directory.GetFiles(ExportedAudioClipDirectory, "*.wav").ToList();
         foreach (string BadWavFile in BadWavFiles)
@@ -42,7 +43,7 @@ internal class Program
         }
     }
 
-    static void FindFilesAndFixStucture()
+    internal static void FindFilesAndFixStucture()
     {
         AssetsDirectory = Directory.GetCurrentDirectory();
 
@@ -72,7 +73,11 @@ internal class Program
 
             // Remove files that would cause issues if moved
             BadFiles.Remove(Path.Combine(AssetsDirectory, "AUTOREMAPPER.exe"));
+            BadFiles.Remove(Path.Combine(AssetsDirectory, "AUTOREMAPPER.exe.meta"));
+            BadFiles.Remove(Path.Combine(AssetsDirectory, "AUTOREMAPPER.pdb"));
+            BadFiles.Remove(Path.Combine(AssetsDirectory, "AUTOREMAPPER.pdb.meta"));
             BadFiles.Remove(Path.Combine(AssetsDirectory, "ffmpeg.exe"));
+            BadFiles.Remove(Path.Combine(AssetsDirectory, "ffmpeg.exe.meta"));
             BadFiles.Remove(Path.Combine(AssetsDirectory, "!ImportedAssets.meta"));
 
             foreach (string BadFile in BadFiles)
@@ -94,7 +99,7 @@ internal class Program
         if (!Directory.Exists(PluginsDirectory)) { Console.WriteLine("Failed to find the directory: " + PluginsDirectory); WaitForUserInputAndQuit(); return; }
     }
 
-    static void Main(string[] args)
+    internal static void Main(string[] args)
     {
         Stopwatch stopwatch = new Stopwatch();
         stopwatch.Start();
