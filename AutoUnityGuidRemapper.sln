@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AUTOREMAPPER", "AUTOREMAPPER\AUTOREMAPPER.csproj", "{581614FE-3DFD-45DC-8C7E-33CA1FE4D91B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoUnityGuidRemapper", "AutoUnityGuidRemapper\AutoUnityGuidRemapper.csproj", "{581614FE-3DFD-45DC-8C7E-33CA1FE4D91B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
