@@ -18,56 +18,55 @@ public static class AutoGuidRemapper
         if (makeAllFilesReadable)
         {
             Console.WriteLine("Setting All Files As Readable");
-            Parallel.ForEach(Directory.EnumerateFiles(unityProjectRootDirectory, "*", SearchOption.AllDirectories),
-                file => { File.SetAttributes(file, File.GetAttributes(file) & ~FileAttributes.Normal); });
+            Parallel.ForEach(Directory.EnumerateFiles(unityProjectRootDirectory, "*", SearchOption.AllDirectories), file => { File.SetAttributes(file, File.GetAttributes(file) & ~FileAttributes.Normal); });
             Console.WriteLine("Done Setting All Files As Readable");
         }
 
         ConcurrentDictionary<string, string?> filesNameToImportedGuids = new ConcurrentDictionary<string, string?>();
-        ConcurrentDictionary<string, string?> exportedGuidsToImportedGuids = new ConcurrentDictionary<string, string?>();
+        ConcurrentDictionary<string, string?> rippedGuidsToImportedGuids = new ConcurrentDictionary<string, string?>();
 
         Console.WriteLine("Started Good File Parsing");
 
         IEnumerable<string> importedMetaFilePaths = Directory.EnumerateFiles(importedAssetsDirectory, "*.meta", SearchOption.AllDirectories);
 
-        Parallel.ForEach(importedMetaFilePaths, goodMetaFilePath => {
-            string goodFilePath = goodMetaFilePath[..^5];
-            if (!File.Exists(goodFilePath)) { return; }
+        Parallel.ForEach(importedMetaFilePaths, importedMetaFilePath => {
+            string importedFilePath = importedMetaFilePath[..^5];
+            if (!File.Exists(importedFilePath)) { return; }
             
-            using StreamReader goodMetaFileStreamReader = new StreamReader(goodMetaFilePath);
-            goodMetaFileStreamReader.ReadLine();
-            string? possibleGuidLine = goodMetaFileStreamReader.ReadLine();
+            using StreamReader importedMetaFileStreamReader = new StreamReader(importedMetaFilePath);
+            importedMetaFileStreamReader.ReadLine();
+            string? possibleGuidLine = importedMetaFileStreamReader.ReadLine();
             if (possibleGuidLine == null || !possibleGuidLine.StartsWith("guid: ")) { return; }
-            string goodGuid = possibleGuidLine[6..];
+            string importedGuid = possibleGuidLine[6..];
 
-            using StreamReader goodFileStreamReader = new StreamReader(goodFilePath);
-            switch (Path.GetExtension(goodFilePath)) {
+            using StreamReader importedFileStreamReader = new StreamReader(importedFilePath);
+            switch (Path.GetExtension(importedFilePath)) {
                 case ".cs": {
                     Match namespaceMatch = Match.Empty;
-                    string? goodFileLine;
-                    while ((goodFileLine = goodFileStreamReader.ReadLine()) != null) {
-                        namespaceMatch = NameSpaceRegex.Match(goodFileLine);
+                    string? fileLine;
+                    while ((fileLine = importedFileStreamReader.ReadLine()) != null) {
+                        namespaceMatch = NameSpaceRegex.Match(fileLine);
                         if (!namespaceMatch.Success) { continue; }
-                        filesNameToImportedGuids.TryAdd(Path.GetFileName(goodFilePath) + namespaceMatch.Groups[1].Value, goodGuid);
+                        filesNameToImportedGuids.TryAdd(Path.GetFileName(importedFilePath) + namespaceMatch.Groups[1].Value, importedGuid);
                         break;
                     }
-                    if (!namespaceMatch.Success) { filesNameToImportedGuids.TryAdd(Path.GetFileName(goodFilePath), goodGuid); }
+                    if (!namespaceMatch.Success) { filesNameToImportedGuids.TryAdd(Path.GetFileName(importedFilePath), importedGuid); }
                     break;
                 }
                 case ".shader": {
                     Match shaderPathMatch = Match.Empty;
-                    string? goodFileLine;
-                    while ((goodFileLine = goodFileStreamReader.ReadLine()) != null) {
-                        shaderPathMatch = ShaderPathRegex.Match(goodFileLine);
+                    string? fileLine;
+                    while ((fileLine = importedFileStreamReader.ReadLine()) != null) {
+                        shaderPathMatch = ShaderPathRegex.Match(fileLine);
                         if (!shaderPathMatch.Success) { continue; }
-                        filesNameToImportedGuids.TryAdd(shaderPathMatch.Groups[1].Value, goodGuid);
+                        filesNameToImportedGuids.TryAdd(shaderPathMatch.Groups[1].Value, importedGuid);
                         break;
                     }
-                    if (!shaderPathMatch.Success) { filesNameToImportedGuids.TryAdd(Path.GetFileName(goodFilePath), goodGuid); }
+                    if (!shaderPathMatch.Success) { filesNameToImportedGuids.TryAdd(Path.GetFileName(importedFilePath), importedGuid); }
                     break;
                 }
                 default: {
-                    filesNameToImportedGuids.TryAdd(Path.GetFileName(goodFilePath), goodGuid);
+                    filesNameToImportedGuids.TryAdd(Path.GetFileName(importedFilePath), importedGuid);
                     break;
                 }
             }
@@ -75,17 +74,17 @@ public static class AutoGuidRemapper
 
         Console.WriteLine("Started Bad File Parsing");
 
-        IEnumerable<string> badMetaFilePaths = Directory.EnumerateFiles(rippedAssetsDirectory, "*.meta", SearchOption.AllDirectories).Where(file => !file.Contains(importedAssetsDirectory));
+        IEnumerable<string> rippedFilePaths = Directory.EnumerateFiles(rippedAssetsDirectory, "*.meta", SearchOption.AllDirectories).Where(file => !file.Contains(importedAssetsDirectory));
 
-        Parallel.ForEach(badMetaFilePaths, badMetaFilePath => {
+        Parallel.ForEach(rippedFilePaths, badMetaFilePath => {
             string badFilePath = badMetaFilePath[..^5];
             if (!File.Exists(badFilePath)) { return; }
 
-            using StreamReader badMetaFileStreamReader = new StreamReader(badMetaFilePath);
-            badMetaFileStreamReader.ReadLine();
-            string? possibleGuidLine = badMetaFileStreamReader.ReadLine();
+            using StreamReader rippedFileStreamReader = new StreamReader(badMetaFilePath);
+            rippedFileStreamReader.ReadLine();
+            string? possibleGuidLine = rippedFileStreamReader.ReadLine();
             if (possibleGuidLine == null || !possibleGuidLine.StartsWith("guid: ")) { return; }
-            string badGuid = possibleGuidLine[6..];
+            string rippedGuid = possibleGuidLine[6..];
             
             switch (Path.GetExtension(badFilePath)) {
                 case ".cs": {
@@ -100,10 +99,10 @@ public static class AutoGuidRemapper
 
                     string lookupKey = Path.GetFileName(badFilePath) + (namespaceMatch.Success ? namespaceMatch.Groups[1].Value : "");
                     if (filesNameToImportedGuids.TryGetValue(lookupKey, out string? goodGuid)) {
-                        exportedGuidsToImportedGuids.TryAdd(badGuid, goodGuid);
+                        rippedGuidsToImportedGuids.TryAdd(rippedGuid, goodGuid);
                     }
                     
-                    if (removeReplacedFiles) { File.Delete(badFilePath); badMetaFileStreamReader.Close(); File.Delete(badMetaFilePath); }
+                    if (removeReplacedFiles) { File.Delete(badFilePath); rippedFileStreamReader.Close(); File.Delete(badMetaFilePath); }
                     
                     break;
                 }
@@ -119,22 +118,22 @@ public static class AutoGuidRemapper
 
                     string lookupKey = shaderPathMatch.Success ? shaderPathMatch.Groups[1].Value : Path.GetFileName(badFilePath);
                     if (filesNameToImportedGuids.TryGetValue(lookupKey, out string? goodGuid)) {
-                        exportedGuidsToImportedGuids.TryAdd(badGuid, goodGuid);
+                        rippedGuidsToImportedGuids.TryAdd(rippedGuid, goodGuid);
                     }
                     
-                    if (removeReplacedFiles) { File.Delete(badFilePath); badMetaFileStreamReader.Close(); File.Delete(badMetaFilePath); }
+                    if (removeReplacedFiles) { File.Delete(badFilePath); rippedFileStreamReader.Close(); File.Delete(badMetaFilePath); }
                     break;
                 }
                 case ".asmdef": {
                     if (filesNameToImportedGuids.TryGetValue(Path.GetFileName(badFilePath), out string? goodGuid)) {
-                        exportedGuidsToImportedGuids.TryAdd(badGuid, goodGuid);
-                        if (removeReplacedFiles) { File.Delete(badFilePath); badMetaFileStreamReader.Close(); File.Delete(badMetaFilePath); }
+                        rippedGuidsToImportedGuids.TryAdd(rippedGuid, goodGuid);
+                        if (removeReplacedFiles) { File.Delete(badFilePath); rippedFileStreamReader.Close(); File.Delete(badMetaFilePath); }
                     }
                     break;
                 }
                 default: {
                     if (filesNameToImportedGuids.TryGetValue(Path.GetFileName(badFilePath), out string? goodGuid)) {
-                        exportedGuidsToImportedGuids.TryAdd(badGuid, goodGuid);
+                        rippedGuidsToImportedGuids.TryAdd(rippedGuid, goodGuid);
                     }
                     break;
                 }
@@ -143,26 +142,26 @@ public static class AutoGuidRemapper
 
         Console.WriteLine("Finding Files To Remap");
 
-        string[] badGuidsArray = exportedGuidsToImportedGuids.Keys.ToArray();
-        string?[] goodGuidsArray = exportedGuidsToImportedGuids.Values.ToArray();
+        string[] rippedGuidsArray = rippedGuidsToImportedGuids.Keys.ToArray();
+        string?[] importedGuidsArray = rippedGuidsToImportedGuids.Values.ToArray();
 
         string[] extensions = ["*.prefab", "*.unity", "*.mat", "*.asmdef"]; // Add more??
         IEnumerable<string> filesToRemap = extensions.AsParallel().SelectMany(extension => Directory.EnumerateFiles(unityProjectRootDirectory, extension, SearchOption.AllDirectories).Where(file => !file.Contains(importedAssetsDirectory)));
 
         filesToRemap = filesToRemap.Concat(Directory.EnumerateFiles(unityProjectRootDirectory, "*.asset", SearchOption.AllDirectories).Where(file => !file.Contains(importedAssetsDirectory)).Where(filePath =>
         {
-            using StreamReader goodMetaFileStreamReader = new StreamReader(filePath);
-            goodMetaFileStreamReader.ReadLine();
-            goodMetaFileStreamReader.ReadLine();
-            goodMetaFileStreamReader.ReadLine();
-            string? line = goodMetaFileStreamReader.ReadLine();
+            using StreamReader assetFileStreamReader = new StreamReader(filePath);
+            assetFileStreamReader.ReadLine();
+            assetFileStreamReader.ReadLine();
+            assetFileStreamReader.ReadLine();
+            string? line = assetFileStreamReader.ReadLine();
             return line == null || !line.StartsWith("Mesh:");
         }).AsParallel());
 
         Console.WriteLine("Starting GUID Remapping");
 
-        long badGuidsReferenced = 0;
-        long badReferencesFound = 0;
+        long rippedGuidsReferenced = 0;
+        long rippedReferencesFound = 0;
         Parallel.ForEach(filesToRemap, fileToRemap => {
             if (!File.Exists(fileToRemap)) {
                 Console.WriteLine($"{fileToRemap} Does Not Exist??");
@@ -175,10 +174,10 @@ public static class AutoGuidRemapper
             using (StreamWriter tempFileStreamWriter = new StreamWriter(tempFile)) {
                 string line;
                 while ((line = fileToRemapStreamReader.ReadLine()!) != null) {
-                    for (int i = 0; i < badGuidsArray.Length; i++) {
-                        if (!line.Contains(badGuidsArray[i])) { continue; }
-                        line = line.Replace(badGuidsArray[i], goodGuidsArray[i]);
-                        Interlocked.Add(ref badReferencesFound, 1);
+                    for (int i = 0; i < rippedGuidsArray.Length; i++) {
+                        if (!line.Contains(rippedGuidsArray[i])) { continue; }
+                        line = line.Replace(rippedGuidsArray[i], importedGuidsArray[i]);
+                        Interlocked.Add(ref rippedReferencesFound, 1);
                         guidsRemapped = true;
                         break;
                     }
@@ -190,7 +189,7 @@ public static class AutoGuidRemapper
             if (guidsRemapped) {
                 File.Move(tempFile, fileToRemap, true);
                 Console.WriteLine($"{Path.GetFileName(fileToRemap)} Successful Remapped GUIDs");
-                Interlocked.Add(ref badGuidsReferenced, 1);
+                Interlocked.Add(ref rippedGuidsReferenced, 1);
             }
             else {
                 File.Delete(tempFile);
@@ -198,8 +197,8 @@ public static class AutoGuidRemapper
             }
         });
 
-        Console.WriteLine($"{badGuidsReferenced} bad GUID referenced");
-        Console.WriteLine($"{badReferencesFound} bad references found");
+        Console.WriteLine($"{rippedGuidsReferenced} ripped GUID referenced");
+        Console.WriteLine($"{rippedReferencesFound} ripped references found");
 
         stopwatch.Stop();
         Console.WriteLine($"Elapsed Time: {stopwatch.Elapsed}");

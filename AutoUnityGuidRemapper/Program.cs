@@ -6,7 +6,7 @@ static class Program
 {
     private static void WaitForUserInputAndQuit() { Console.WriteLine("Press any key to continue..."); Console.ReadKey(); Environment.Exit(0); }
     private static void WaitForUserInput() { Console.WriteLine("Press any key to continue..."); Console.ReadKey();}
-
+    
     private static void FindFilesAndFixStructure() {
         Console.WriteLine("STRAFTAT Auto Ripper");
         Console.WriteLine("Automagically create a working Unity project.");
@@ -22,9 +22,9 @@ static class Program
         
         string exportedFilesDirectory = Path.Combine(assetsDirectory, "!ExportedAssets");
         if (!Directory.Exists(exportedFilesDirectory)) {
-            List<string> badFiles = Directory.GetFileSystemEntries(assetsDirectory).ToList();
+            List<string> exportedFiles = Directory.GetFileSystemEntries(assetsDirectory).ToList();
             Directory.CreateDirectory(exportedFilesDirectory);
-            foreach (string badFile in badFiles) { Directory.Move(badFile, Path.Combine(exportedFilesDirectory, Path.GetFileName(badFile))); }
+            foreach (string exportedFile in exportedFiles) { Directory.Move(exportedFile, Path.Combine(exportedFilesDirectory, Path.GetFileName(exportedFile))); }
         }
         
         string importedFilesDirectory = Path.Combine(assetsDirectory, "!ImportedAssets");
