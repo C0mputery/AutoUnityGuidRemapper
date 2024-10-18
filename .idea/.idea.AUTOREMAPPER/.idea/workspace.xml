@@ -7,17 +7,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f075afd8-77ea-4a9d-be9e-da53d9e781ee" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/AutoUnityGuidRemapper/AutoGuidRemapper.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/AutoUnityGuidRemapper/Program.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.AUTOREMAPPER/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.AUTOREMAPPER/.idea/indexLayout.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/AUTOREMAPPER.sln" beforeDir="false" afterPath="$PROJECT_DIR$/AutoUnityGuidRemapper.sln" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/AUTOREMAPPER/AUTOREMAPPER.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/AutoUnityGuidRemapper/AutoUnityGuidRemapper.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/AUTOREMAPPER/PostFix.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/AUTOREMAPPER/Program.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/AUTOREMAPPER/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/AutoUnityGuidRemapper/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/AUTOREMAPPER/Remapper.cs" beforeDir="false" />
+    <list default="true" id="f075afd8-77ea-4a9d-be9e-da53d9e781ee" name="Changes" comment="a">
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.AUTOREMAPPER/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.AUTOREMAPPER/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/AutoUnityGuidRemapper/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/AutoUnityGuidRemapper/Program.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -44,6 +36,7 @@
     <setting file="file://$PROJECT_DIR$/AutoUnityGuidRemapper/Program.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/AutoUnityGuidRemapper/Remapper.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
+  <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="true" />
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 1
 }</component>
@@ -96,15 +89,36 @@
       <option name="presentableId" value="Default" />
       <updated>1729176836081</updated>
       <workItem from="1729176837479" duration="2524000" />
-      <workItem from="1729188901641" duration="6702000" />
+      <workItem from="1729188901641" duration="7255000" />
     </task>
+    <task id="LOCAL-00001" summary="Refactored Like everythihng">
+      <option name="closed" value="true" />
+      <created>1729196137045</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1729196137045</updated>
+    </task>
+    <task id="LOCAL-00002" summary="a">
+      <option name="closed" value="true" />
+      <created>1729196144483</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1729196144483</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
+  <component name="UnityCheckinConfiguration" checkUnsavedScenes="true" />
   <component name="UnityProjectConfiguration" hasMinimizedUI="false" />
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
+    <MESSAGE value="Refactored Like everythihng" />
+    <MESSAGE value="a" />
+    <option name="LAST_COMMIT_MESSAGE" value="a" />
   </component>
 </project>
