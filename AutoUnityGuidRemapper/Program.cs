@@ -16,6 +16,9 @@ static class Program
     private static void FindFilesAndFixStructure() {
         Console.WriteLine("What is the root directory of the Unity project?");
         RootDirectory = Console.ReadLine() ?? "";
+        if (string.IsNullOrEmpty(RootDirectory)) { RootDirectory = @"C:\Users\Computery\Desktop\STRAFTAT"; }
+
+
         if (!Directory.Exists(RootDirectory)) { Console.WriteLine("The directory does not exist!"); WaitForUserInputAndQuit(); return; }
         
         AssetsDirectory = Path.Combine(RootDirectory, "Assets");
@@ -53,8 +56,8 @@ static class Program
             
             Console.WriteLine("Starting Package Cache Remapping...");
             AutoGuidRemapper.RemapGuids(RootDirectory, ExportedFilesDirectory, PackageCacheDirectory, true, true);
-            //Console.WriteLine("Starting Asset Remapping...");
-            //AutoGuidRemapper.RemapGuids(RootDirectory, ExportedFilesDirectory, ImportedFilesDirectory, true, false);
+            Console.WriteLine("Starting Asset Remapping...");
+            AutoGuidRemapper.RemapGuids(RootDirectory, ExportedFilesDirectory, ImportedFilesDirectory, true, false);
         }
         catch (Exception e)
         {

@@ -100,9 +100,8 @@ public static class AutoGuidRemapper
                     string lookupKey = Path.GetFileName(badFilePath) + (namespaceMatch.Success ? namespaceMatch.Groups[1].Value : "");
                     if (filesNameToImportedGuids.TryGetValue(lookupKey, out string? goodGuid)) {
                         rippedGuidsToImportedGuids.TryAdd(rippedGuid, goodGuid);
+                        if (removeReplacedFiles) { File.Delete(badFilePath); rippedFileStreamReader.Close(); File.Delete(badMetaFilePath); }
                     }
-                    
-                    if (removeReplacedFiles) { File.Delete(badFilePath); rippedFileStreamReader.Close(); File.Delete(badMetaFilePath); }
                     
                     break;
                 }
@@ -119,9 +118,9 @@ public static class AutoGuidRemapper
                     string lookupKey = shaderPathMatch.Success ? shaderPathMatch.Groups[1].Value : Path.GetFileName(badFilePath);
                     if (filesNameToImportedGuids.TryGetValue(lookupKey, out string? goodGuid)) {
                         rippedGuidsToImportedGuids.TryAdd(rippedGuid, goodGuid);
+                        if (removeReplacedFiles) { File.Delete(badFilePath); rippedFileStreamReader.Close(); File.Delete(badMetaFilePath); }
                     }
                     
-                    if (removeReplacedFiles) { File.Delete(badFilePath); rippedFileStreamReader.Close(); File.Delete(badMetaFilePath); }
                     break;
                 }
                 case ".asmdef": {
