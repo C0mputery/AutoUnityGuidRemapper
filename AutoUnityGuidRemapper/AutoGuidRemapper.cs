@@ -193,7 +193,6 @@ public static class AutoGuidRemapper
             }
             else {
                 File.Delete(tempFile);
-                Console.WriteLine($"{Path.GetFileName(fileToRemap)} Found No Bad GUIDS");
             }
         });
 
