@@ -38,6 +38,14 @@ static class Program
         if (!Directory.Exists(ImportedFilesDirectory)) {
             Directory.CreateDirectory(ImportedFilesDirectory);
         }
+        else {
+            List<string> importedFiles = Directory.GetFileSystemEntries(AssetsDirectory).ToList();
+            importedFiles.Remove(ExportedFilesDirectory);
+            importedFiles.Remove(ExportedFilesDirectory + ".meta");
+            importedFiles.Remove(ImportedFilesDirectory);
+            importedFiles.Remove(ImportedFilesDirectory + ".meta");
+            foreach (string importedFile in importedFiles) { Directory.Move(importedFile, Path.Combine(ImportedFilesDirectory, Path.GetFileName(importedFile))); }
+        }
     }
 
     public static void Main(string[] args)
@@ -52,12 +60,18 @@ static class Program
             
             FindFilesAndFixStructure();
             Console.WriteLine("Import the 3rd party assets into the !ImportedAssets folder.");
-            WaitForUserInput();
+            
+            Console.WriteLine("Do you want to skip the PackageCache remapping? (y/n)");
+            string input = Console.ReadLine() ?? "";
+            if (input.Equals("y", StringComparison.CurrentCultureIgnoreCase)) { goto skipPackageCache; }
             
             Console.WriteLine("Starting Package Cache Remapping...");
             AutoGuidRemapper.RemapGuids(RootDirectory, ExportedFilesDirectory, PackageCacheDirectory, true, true);
+            skipPackageCache:
             Console.WriteLine("Starting Asset Remapping...");
             AutoGuidRemapper.RemapGuids(RootDirectory, ExportedFilesDirectory, ImportedFilesDirectory, true, false);
+            
+            ScriptFixer.FixScripts(AssetsDirectory);
         }
         catch (Exception e)
         {
