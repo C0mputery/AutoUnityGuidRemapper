@@ -71,6 +71,7 @@ static class Program
             Console.WriteLine("Starting Asset Remapping...");
             AutoGuidRemapper.RemapGuids(RootDirectory, ExportedFilesDirectory, ImportedFilesDirectory, true, false);
             
+            FolderRemover.RemoveFolders(RootDirectory);
             ScriptFixer.FixScripts(AssetsDirectory);
         }
         catch (Exception e)

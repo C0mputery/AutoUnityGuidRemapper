@@ -74,8 +74,7 @@ public static class ScriptFixer {
         }
         
         if (updated) {
-            File.Delete(script);
-            File.Move(tempFilePath, script);
+            File.Move(tempFilePath, script, true);
         }
         else {
             File.Delete(tempFilePath);
@@ -84,22 +83,20 @@ public static class ScriptFixer {
     
     private static void FixScript(string script) {
         if (!ScriptToClassName.TryGetValue(script, out string? className)) { return; }
+        if (!ScriptsToAddTheOneUsingLineToo.Contains(className)) { return; }
         
-        if (ScriptsToAddTheOneUsingLineToo.Contains(className)) {
-            string tempFilePath = Path.GetTempFileName();
-            using (StreamReader reader = new StreamReader(script))
-            using (StreamWriter writer = new StreamWriter(tempFilePath)) {
-                string? firstLine = reader.ReadLine();
-                if (firstLine != null && !firstLine.Contains("using Input = HeathenEngineering.SteamworksIntegration.API.Input;")) {
-                    writer.WriteLine("using Input = HeathenEngineering.SteamworksIntegration.API.Input;");
-                    Console.WriteLine($"Added using line to {script}");
-                }
-                writer.WriteLine(firstLine);
-                while (!reader.EndOfStream) { writer.WriteLine(reader.ReadLine()); }
+        string tempFilePath = Path.GetTempFileName();
+        using (StreamReader reader = new StreamReader(script))
+        using (StreamWriter writer = new StreamWriter(tempFilePath)) {
+            string? firstLine = reader.ReadLine();
+            if (firstLine != null && !firstLine.Contains("using Input = HeathenEngineering.SteamworksIntegration.API.Input;")) {
+                writer.WriteLine("using Input = HeathenEngineering.SteamworksIntegration.API.Input;");
+                Console.WriteLine($"Added using line to {script}");
             }
-            File.Delete(script);
-            File.Move(tempFilePath, script);
+            writer.WriteLine(firstLine);
+            while (!reader.EndOfStream) { writer.WriteLine(reader.ReadLine()); }
         }
+        File.Move(tempFilePath, script, true);
     }
     
     private static bool RecursivelyCheckInheritor(string className, string inheritorName) {

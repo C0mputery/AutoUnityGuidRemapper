@@ -7,6 +7,10 @@ namespace AutoUnityGuidRemapper;
 
 public static class AutoGuidRemapper
 {
+    private static readonly string[] importedFilesToExclude = [
+        @"Library\PackageCache\com.unity.render-pipelines.universal@12.1.8\Samples~\URPPackageSamples\SharedAssets\Scripts\FirstPersonController.cs",
+    ];
+    
     private static readonly Regex ShaderPathRegex = new Regex(@"Shader\s+""([^""]+)""", RegexOptions.Compiled);
     private static readonly Regex NameSpaceRegex =  new Regex(@"namespace\s+([\w.]+)", RegexOptions.Compiled);
     
@@ -32,6 +36,17 @@ public static class AutoGuidRemapper
         Parallel.ForEach(importedMetaFilePaths, importedMetaFilePath => {
             string importedFilePath = importedMetaFilePath[..^5];
             if (!File.Exists(importedFilePath)) { return; }
+            foreach (string importedFileToExclude in importedFilesToExclude) {
+                if (importedFilePath.Contains(importedFileToExclude)) { return; }
+            }
+
+            if (importedFilePath.Contains("FirstPersonController")) {
+                Console.WriteLine("AAAAAAAA" + importedFilePath); 
+                Console.WriteLine("AAAAAAAA" + importedFilePath);
+                Console.WriteLine("AAAAAAAA" + importedFilePath);
+                Console.WriteLine("AAAAAAAA" + importedFilePath);
+                Console.WriteLine("AAAAAAAA" + importedFilePath);
+            }
             
             using StreamReader importedMetaFileStreamReader = new StreamReader(importedMetaFilePath);
             importedMetaFileStreamReader.ReadLine();
